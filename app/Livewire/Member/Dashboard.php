@@ -83,6 +83,12 @@ class Dashboard extends Component
             $result = $knn->classify($features);
             $this->userLabel = $result['label'];
             $this->nearestNeighbors = array_slice($result['neighbors'], 0, 3);
+
+            // Sync with database behavior_label
+            if ($user->behavior_label !== $this->userLabel) {
+                $user->behavior_label = $this->userLabel;
+                $user->save();
+            }
         } else {
             // Fallback if seeder hasn't run
             $this->userLabel = 'Pecinta Kopi Strong & Hemat';

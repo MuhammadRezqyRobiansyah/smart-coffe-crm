@@ -143,10 +143,48 @@ class User extends Authenticatable implements PasskeyUser
 
         $this->save();
 
+        // Recalculate behavior label using KNN
+        $this->recalculateBehaviorLabel();
+
         return [
             'old_tier' => $oldTier,
             'new_tier' => $this->tier_status,
             'tier_changed' => $oldTier !== $this->tier_status
         ];
+    }
+
+    /**
+     * Recalculate behavior label using KNN and save to database
+     */
+    public function recalculateBehaviorLabel()
+    {
+        if ($this->transactions()->count() === 0) {
+            $this->behavior_label = null;
+            $this->save();
+            return;
+        }
+
+        $features = $this->getKnnFeatures();
+        
+        $knn = new \App\Services\KNearestNeighborsService(3);
+        
+        // Fetch labeled training set (excluding current user)
+        $trainingCustomers = self::where('role', 'member')
+            ->where('id', '!=', $this->id)
+            ->whereNotNull('behavior_label')
+            ->get();
+            
+        foreach ($trainingCustomers as $customer) {
+            $knn->train($customer->getKnnFeatures(), $customer->behavior_label, $customer->name);
+        }
+        
+        if ($knn->getDatasetCount() > 0) {
+            $result = $knn->classify($features);
+            $this->behavior_label = $result['label'];
+        } else {
+            // Default fallback if no training data
+            $this->behavior_label = 'Pecinta Kopi Strong & Hemat';
+        }
+        $this->save();
     }
 }

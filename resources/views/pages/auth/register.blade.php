@@ -34,6 +34,17 @@
                 placeholder="email@example.com"
             />
 
+            <!-- Phone Number -->
+            <flux:input
+                name="no_hp"
+                :label="__('Nomor Telepon (WhatsApp)')"
+                :value="old('no_hp')"
+                type="text"
+                required
+                autocomplete="tel"
+                placeholder="081234567890"
+            />
+
             <!-- Password -->
             <flux:input
                 name="password"

@@ -307,6 +307,12 @@
                 else if (pt.label === 'Pelanggan Premium (Suka Es Krim/Kue Mahal)') groups.premium.push(mappedPt);
                 else groups.unknown.push(mappedPt);
             });
+
+            // Detect dark mode to apply dynamic color styling
+            const isDark = document.documentElement.classList.contains('dark') || document.body.classList.contains('dark');
+            const textColor = isDark ? '#FFFDD0' : '#3C1518';
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(60, 21, 24, 0.08)';
+
             if (window.scatterChartInstance) window.scatterChartInstance.destroy();
             window.scatterChartInstance = new Chart(ctx, {
                 type: 'scatter',
@@ -321,11 +327,23 @@
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     scales: {
-                        x: { title: { display: true, text: 'Preferensi Rasa Manis (1-5)', color: '#69432B', font: { weight: 'bold', size: 12 } }, grid: { color: 'rgba(60,21,24,0.08)' }, ticks: { color: '#69432B' }, min: 0.5, max: 5.5 },
-                        y: { title: { display: true, text: 'Rasio Coffee (0-1)', color: '#69432B', font: { weight: 'bold', size: 12 } }, grid: { color: 'rgba(60,21,24,0.08)' }, ticks: { color: '#69432B' }, min: -0.05, max: 1.05 }
+                        x: { 
+                            title: { display: true, text: 'Preferensi Rasa Manis (1-5)', color: textColor, font: { weight: 'bold', size: 12 } }, 
+                            grid: { color: gridColor }, 
+                            ticks: { color: textColor }, 
+                            min: 0.5, 
+                            max: 5.5 
+                        },
+                        y: { 
+                            title: { display: true, text: 'Rasio Coffee (0-1)', color: textColor, font: { weight: 'bold', size: 12 } }, 
+                            grid: { color: gridColor }, 
+                            ticks: { color: textColor }, 
+                            min: -0.05, 
+                            max: 1.05 
+                        }
                     },
                     plugins: {
-                        legend: { labels: { color: '#3C1518', font: { weight: 'bold', size: 11 }, usePointStyle: true, padding: 16 } },
+                        legend: { labels: { color: textColor, font: { weight: 'bold', size: 11 }, usePointStyle: true, padding: 16 } },
                         tooltip: { callbacks: { label: ctx => `${ctx.raw.name} | Manis: ${ctx.raw.x} | Kopi: ${ctx.raw.y} | Belanja: Rp ${new Intl.NumberFormat('id-ID').format(ctx.raw.spending)}` } }
                     }
                 }

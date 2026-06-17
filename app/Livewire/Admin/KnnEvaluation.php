@@ -142,6 +142,7 @@ class KnnEvaluation extends Component
 
     public function render()
     {
+        $this->calculateTestUserKnn();
         $allMembers = User::where('role', 'member')->orderBy('name')->get();
 
         return view('livewire.admin.knn-evaluation', [

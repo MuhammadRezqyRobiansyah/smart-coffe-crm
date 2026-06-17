@@ -227,11 +227,30 @@
                                 <span>−Rp {{ number_format($discountAmount, 0, ',', '.') }}</span>
                             </div>
                         @endif
+                        @if($pointsRedeemed > 0)
+                            <div class="flex justify-between text-sm font-bold text-purple-y2k">
+                                <span>🪙 Potongan Poin ({{ number_format($pointsRedeemed, 0, ',', '.') }} Poin):</span>
+                                <span>−Rp {{ number_format($pointsDiscountAmount, 0, ',', '.') }}</span>
+                            </div>
+                        @endif
                         <div class="flex justify-between text-lg font-black text-espresso dark:text-cream retro-divider pt-3">
                             <span>TOTAL BAYAR:</span>
                             <span class="text-berry">Rp {{ number_format($finalTotal, 0, ',', '.') }}</span>
                         </div>
                         @if($selectedUser)
+                            @if($selectedUser->total_poin >= 1000)
+                                <div class="nb-card-sm bg-purple-y2k/10 p-3 flex items-center justify-between text-xs">
+                                    <div class="flex items-center gap-2">
+                                        <input type="checkbox" wire:model.live="usePoints" id="usePointsCheckbox" class="nb-checkbox rounded text-purple-y2k focus:ring-purple-y2k border-2 border-black" />
+                                        <label for="usePointsCheckbox" class="font-black text-espresso select-none cursor-pointer">
+                                            Tukar Poin Member (Kelipatan 1.000)
+                                        </label>
+                                    </div>
+                                    <span class="font-black text-coffee-600">
+                                        Tersedia: {{ number_format($selectedUser->total_poin, 0, ',', '.') }} Poin
+                                    </span>
+                                </div>
+                            @endif
                             <div class="nb-card-sm bg-yellow-y2k/20 p-3 text-xs space-y-1">
                                 <div class="flex justify-between font-bold text-espresso">
                                     <span>Estimasi Poin Masuk:</span>
@@ -358,6 +377,12 @@
                             <div class="flex justify-between text-espresso font-black">
                                 <span>TOTAL POTONGAN ({{ $lastTxData['discount_percent'] }}%)</span>
                                 <span>-Rp{{ number_format($lastTxData['discount_amount'], 0, ',', '.') }}</span>
+                            </div>
+                        @endif
+                        @if(isset($lastTxData['points_redeemed']) && $lastTxData['points_redeemed'] > 0)
+                            <div class="flex justify-between text-espresso font-black">
+                                <span>POTONGAN POIN ({{ number_format($lastTxData['points_redeemed'], 0, ',', '.') }})</span>
+                                <span>-Rp{{ number_format($lastTxData['points_discount_amount'], 0, ',', '.') }}</span>
                             </div>
                         @endif
                         <div class="receipt-dashed my-1"></div>

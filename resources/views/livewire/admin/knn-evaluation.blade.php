@@ -21,7 +21,7 @@
             <!-- Select K -->
             <div>
                 <label class="block text-xs font-black text-coffee-600 uppercase mb-1.5 tracking-wider">Nilai K (Jumlah Tetangga)</label>
-                <select wire:model.change="k" class="nb-select w-full bg-white dark:bg-coffee-800 px-3 py-2.5 text-sm text-espresso dark:text-cream">
+                <select wire:model.live="k" class="nb-select w-full bg-white dark:bg-coffee-800 px-3 py-2.5 text-sm text-espresso dark:text-cream">
                     <option value="1">K = 1</option>
                     <option value="3">K = 3 (Standar)</option>
                     <option value="5">K = 5</option>
@@ -34,7 +34,7 @@
             <!-- Select Member -->
             <div>
                 <label class="block text-xs font-black text-coffee-600 uppercase mb-1.5 tracking-wider">Pilih Member (Uji Kasus)</label>
-                <select wire:model.change="testUserId" class="nb-select w-full bg-white dark:bg-coffee-800 px-3 py-2.5 text-sm text-espresso dark:text-cream">
+                <select wire:model.live="testUserId" class="nb-select w-full bg-white dark:bg-coffee-800 px-3 py-2.5 text-sm text-espresso dark:text-cream">
                     @foreach($allMembers as $member)
                         <option value="{{ $member->id }}">{{ $member->name }} ({{ $member->behavior_label ?? 'Belum Labeled' }})</option>
                     @endforeach
@@ -53,9 +53,11 @@
                     </div>
                     <div class="flex justify-between text-xs font-bold text-coffee-700 dark:text-coffee-200">
                         <span>Prediksi KNN:</span>
-                        <span class="nb-badge @if($predictedLabel === $actualLabel) bg-matcha text-espresso @else bg-berry text-white @endif">{{ $predictedLabel }}</span>
+                        <span class="nb-badge @if($actualLabel === 'Belum Terklasifikasi') bg-blue-y2k text-espresso @elseif($predictedLabel === $actualLabel) bg-matcha text-espresso @else bg-berry text-white @endif">{{ $predictedLabel }}</span>
                     </div>
-                    @if($predictedLabel === $actualLabel)
+                    @if($actualLabel === 'Belum Terklasifikasi')
+                        <p class="text-center text-sm font-black text-blue-y2k mt-1">⏳ BELUM DIKLASIFIKASI (KASUS UJI BARU)</p>
+                    @elseif($predictedLabel === $actualLabel)
                         <p class="text-center text-sm font-black text-matcha mt-1">✅ PREDIKSI BENAR!</p>
                     @else
                         <p class="text-center text-sm font-black text-berry mt-1">❌ PREDIKSI SALAH</p>

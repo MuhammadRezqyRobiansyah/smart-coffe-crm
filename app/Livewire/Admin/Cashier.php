@@ -40,6 +40,11 @@ class Cashier extends Component
     public $tierChanged = false;
     public $newTier = '';
 
+    // Points Redemption
+    public $usePoints = false;
+    public $pointsRedeemed = 0;
+    public $pointsDiscountAmount = 0;
+
     // Menu Catalog
     public $menuCatalog = [
         ['nama' => 'Espresso', 'harga' => 18000, 'kategori' => 'Coffee', 'manis' => 1],
@@ -74,6 +79,9 @@ class Cashier extends Component
         $this->couponApplied = false;
         $this->couponDiscountPercent = 0;
         $this->couponError = '';
+        $this->usePoints = false;
+        $this->pointsRedeemed = 0;
+        $this->pointsDiscountAmount = 0;
     }
 
     public function applyCoupon()
@@ -244,6 +252,17 @@ class Cashier extends Component
             $totalBayar = $originalTotal - $discountAmount;
         }
 
+        // Apply Points Discount
+        $pointsRedeemed = 0;
+        $pointsDiscountAmount = 0.0;
+        if ($this->usePoints && $user->total_poin >= 1000) {
+            $maxPointsRedeemableByPoin = floor($user->total_poin / 1000) * 1000;
+            $maxPointsRedeemableByTotal = floor($totalBayar / 10000) * 1000;
+            $pointsRedeemed = (int) min($maxPointsRedeemableByPoin, $maxPointsRedeemableByTotal);
+            $pointsDiscountAmount = ($pointsRedeemed / 1000) * 10000;
+            $totalBayar = $totalBayar - $pointsDiscountAmount;
+        }
+
         // Calculate points based on the current tier:
         // Every 10,000 kelipatan gets 100 points
         // Gold: multiplier 1.5x, Silver: multiplier 1.2x, Bronze: multiplier 1.0x
@@ -277,7 +296,8 @@ class Cashier extends Component
         }
 
         // Update customer points and total spending
-        $user->total_poin += $pointsEarned;
+        $user->total_poin -= $pointsRedeemed; // deduct first
+        $user->total_poin += $pointsEarned;   // then add points from new transaction
         $user->save();
 
         // Recalculate loyalty tier
@@ -314,6 +334,8 @@ class Cashier extends Component
             'subtotal' => $originalTotal,
             'discount_percent' => $totalDiscountPercent,
             'discount_amount' => $discountAmount,
+            'points_redeemed' => $pointsRedeemed,
+            'points_discount_amount' => $pointsDiscountAmount,
             'final_total' => $totalBayar,
             'points_earned' => $pointsEarned,
             'total_points' => $user->total_poin,
@@ -329,6 +351,9 @@ class Cashier extends Component
         $this->couponCode = '';
         $this->couponApplied = false;
         $this->couponDiscountPercent = 0;
+        $this->usePoints = false;
+        $this->pointsRedeemed = 0;
+        $this->pointsDiscountAmount = 0;
     }
 
     public function render()
@@ -372,12 +397,27 @@ class Cashier extends Component
             $finalTotal = $cartTotal - $discountAmount;
         }
 
+        // Calculate Points Discount for live preview
+        $pointsRedeemed = 0;
+        $pointsDiscountAmount = 0.0;
+        if ($selectedUser && $this->usePoints && $selectedUser->total_poin >= 1000) {
+            $maxPointsRedeemableByPoin = floor($selectedUser->total_poin / 1000) * 1000;
+            $maxPointsRedeemableByTotal = floor($finalTotal / 10000) * 1000;
+            $pointsRedeemed = (int) min($maxPointsRedeemableByPoin, $maxPointsRedeemableByTotal);
+            $pointsDiscountAmount = ($pointsRedeemed / 1000) * 10000;
+            $finalTotal = $finalTotal - $pointsDiscountAmount;
+        }
+        $this->pointsRedeemed = $pointsRedeemed;
+        $this->pointsDiscountAmount = $pointsDiscountAmount;
+
         return view('livewire.admin.cashier', [
             'members' => $members,
             'selectedUser' => $selectedUser,
             'cartTotal' => $cartTotal,
             'discountPercent' => $totalDiscountPercent,
             'discountAmount' => $discountAmount,
+            'pointsRedeemed' => $pointsRedeemed,
+            'pointsDiscountAmount' => $pointsDiscountAmount,
             'finalTotal' => $finalTotal,
         ])->layout('layouts.app');
     }
